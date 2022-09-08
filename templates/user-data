@@ -1,0 +1,14 @@
+#cloud-config
+autoinstall:
+    version: 1
+    identity:
+        hostname: $hostname
+        password: "$password_hash"
+        username: $username
+    ssh:
+        allow-pw: false
+        authorized-keys:
+        - $pubkey
+        install-server: true
+    packages:
+        - qemu-guest-agent

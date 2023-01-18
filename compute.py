@@ -60,13 +60,29 @@ class Compute(compute_pb2_grpc.ComputeServicer):
         message = "UUID:" + request.uuid + " destroy."
         return compute_pb2.DestroyReply(message=message)
 
+    def deleteVM(self, request, context):
+        if self.conn == None:
+            message = "conn failed."
+            return compute_pb2.DeleteReply(message=message)
+
+        dom = self.conn.lookupByUUIDString(request.uuid)
+        if dom == None:
+            message = "find domain failed."
+            return compute_pb2.DeleteReply(message=message)
+
+        if dom.undefine() != 0:
+            message = "delete domain failed."
+            return compute_pb2.DeleteReply(message=message)
+
+        message = "UUID:" + request.uuid + " deleted."
+        return compute_pb2.DeleteReply(message=message)
+
     def createVM(self, request, context):
         if self.conn == None:
             message = "conn failed."
             return compute_pb2.CreateReply(message=message)
 
         # 仮想マシンインストールテンプレートの書き換え
-        # TODO:DBからイメージへのパスをもらう
         with open('templates/install.xml') as f:
             t = string.Template(f.read())
         xmlcreate = t.substitute(
@@ -123,23 +139,6 @@ class Compute(compute_pb2_grpc.ComputeServicer):
         
         message = "UUID:" + request.uuid + " created."
         return compute_pb2.CreateReply(message=message)
-
-    def deleteVM(self, request, context):
-        if self.conn == None:
-            message = "conn failed."
-            return compute_pb2.DeleteReply(message=message)
-
-        dom = self.conn.lookupByUUIDString(request.uuid)
-        if dom == None:
-            message = "find domain failed."
-            return compute_pb2.DeleteReply(message=message)
-
-        if dom.undefine() != 0:
-            message = "delete domain failed."
-            return compute_pb2.DeleteReply(message=message)
-
-        message = "UUID:" + request.uuid + " deleted."
-        return compute_pb2.DeleteReply(message=message)
 
     def getStatus(self, request, context):
         if self.conn == None:
